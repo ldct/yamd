@@ -1,0 +1,19 @@
+{
+  "name": "yamd",
+  "version": "1.0.0",
+  "description": "Yet Another MIPS Debugger",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zodiac/yamd.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zodiac/yamd/issues"
+  },
+  "homepage": "https://github.com/zodiac/yamd#readme"
+}
