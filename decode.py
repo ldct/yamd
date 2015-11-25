@@ -55,5 +55,5 @@ with open("mips.mc") as f:
 prev_is_lis = False
 for i, inst in enumerate(decode_str(asm)):
     decoded = decode_execute(inst, prev_is_lis)
-    print('{0: >2} {1}'.format(i, decoded))
+    print('{1}'.format(i, decoded))
     prev_is_lis = isinstance(decoded, str) and decoded.startswith("lis")
