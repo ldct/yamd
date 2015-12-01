@@ -31,55 +31,65 @@ var decode_execute = function (instruction, prev_is_lis) {
 
     if ((instruction & 0b11111100000000000000011111111111) >>> 0 == 0b00000000000000000000000000100000) {
         return format("add $%s $%s $%s", d, s, t);
-    } // add (add)
+    }
     else if ((instruction & 0b11111100000000000000011111111111) >>> 0 == 0b00000000000000000000000000100010) {
         return format("sub $%s $%s $%s", d, s, t)
-    } // subtract (sub)
+    }
     else if ((instruction & 0b11111100000000001111111111111111) >>> 0 == 0b00000000000000000000000000011000) {
+        return "mult"
         return ("mult ${}, ${}".format(s, t), "${}={}, ${}={}".format(s, r[s], t, r[t]))
-    } // multiply (mult)
+    }
     else if ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011001) {
+        return "multu"
         return ("multu ${}, ${}".format(s, t), "${}={}, ${}={}".format(s, r[s], t, r[t]))
-    } // multiply unsigned (multu)
+    }
     else if ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011010) {
+        return "div"
         return ("div ${}, ${}".format(s, t), "${}={}, ${}={}".format(s, r[s], t, r[t]))
-    } // divide (div)
+    }
     else if ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011011) {
+        return "divu"
         return ("divu ${}, ${}".format(s, t), "${}={}, ${}={}".format(s, r[s], t, r[t]))
-    } // divide unsigned (divu)
+    }
     else if ((instruction & 0b11111111111111110000011111111111) >>> 0 === 0b00000000000000000000000000010000) {
+        return "mfhi"
         return format("mfhi $%s", d)
-    } // move from high/remainder (mfhi)
+    }
     else if ((instruction & 0b11111111111111110000011111111111) >>> 0 === 0b00000000000000000000000000010010) {
+        return "mflo"
         return ("mflo ${}".format(d), "${}={}".format(d, r[d]))
-    } // move from low/quotient (mflo)
+    }
     else if ((instruction & 0b11111111111111110000011111111111) >>> 0 === 0b00000000000000000000000000010100) {
         return format("lis $%s", d)
-    } // load immediate and skip (lis)
+    }
     else if ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b10001100000000000000000000000000) {
         return format("lw $%s, %s($%s)", t, i, s);
-    } // load word (lw)
+    }
     else if ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b10101100000000000000000000000000) {
         return format("sw $%s, %s($%s)", t, i, s)
-    } // store word (sw)
+    }
     else if ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000101010) {
+        return "slt"
         return "slt $%d $%d $%d" % (d, s, t)
-    } // set less than (slt)
+    }
     else if ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000101011) {
+        return "sltu"
         return ("sltu ${}, ${}, ${}".format(d, s, t), "${}={}, ${}={}, ${}={}".format(d, r[d], s, r[s], t, r[t]))
-    } // set less than unsigned (sltu)
+    }
     else if ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b00010000000000000000000000000000) {
+        return "beq"
         return "beq $%d $%d %d" % (s, t, i)
-    } // branch on equal (beq)
+    }
     else if ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b00010100000000000000000000000000) {
+        return "bne"
         return "bne $%d $%d %d" % (s, t, i)
-    } // branch on not equal (bne)
+    }
     else if ((instruction & 0b11111100000111111111111111111111) >>> 0 == 0b00000000000000000000000000001000) {
         return format("jr $%s", s);
-    } // jump register (jr)
+    }
     else if ((instruction & 0b11111100000111111111111111111111) >>> 0 == 0b00000000000000000000000000001001) {
         return format("jalr $%s", s);
-    } // jump and link register (jalr)
+    }
     else {
         return instruction.toString();
     }
