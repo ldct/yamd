@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/zodiac/yamd/issues"
   },
-  "homepage": "https://github.com/zodiac/yamd#readme"
+  "homepage": "https://github.com/zodiac/yamd#readme",
+  "dependencies": {
+    "react": "^0.13.3"
+  }
 }
