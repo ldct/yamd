@@ -1,6 +1,6 @@
 # yamd
 Yet Another MIPS Debugger
 
-One of the very few debuggers which understand LIS
+Because real MIPS dissassemblers don't seem to support LIS
 
 ![screenshot](http://imgur.com/hp0qgEI.png)
