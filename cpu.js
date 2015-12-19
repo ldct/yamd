@@ -1,15 +1,17 @@
+var pad = function (str, targetLength, padChar) {
+  targetLength = targetLength || 32;
+  var zero = targetLength - str.length + 1;
+  return Array(+(zero > 0 && zero)).join(padChar) + str;
+}
+
 var zeroPad = function (num, places, radix) {
-  places = places || 32;
   radix = radix || 2;
-  var zero = places - num.toString(radix).length + 1;
-  return Array(+(zero > 0 && zero)).join("0") + num.toString(radix);
+  return pad(num.toString(radix), places, "0");
 }
 
 var spacePad = function (num, places, radix) {
-  places = places || 32;
   radix = radix || 2;
-  var zero = places - num.toString(radix).length + 1;
-  return Array(+(zero > 0 && zero)).join(" ") + num.toString(radix);
+  return pad(num.toString(radix), places, " ");
 }
 
 var Reg = {
@@ -33,8 +35,18 @@ var terminationPC = "11111110111000011101111010101101";
 var maxAddr = "00000001000000000000000000000000";
 var printAddr = "11111111111111110000000000001100";
 
+var signed = function (value) {
+  value = parseInt(value, 2);
+  if (value & 0x80000000) {
+    return value - 0x100000000;
+  } else {
+    return value;
+  }
+}
 
-// var fs = require('fs');
+var unsigned = function (value) {
+  return parseInt(value, 2);
+}
 
 var step = function (state) {
 
@@ -51,26 +63,29 @@ var step = function (state) {
   }
 
   state.PC = zeroPad(parseInt(state.PC, 2) + 4);
+  var reg = state.registers;
 
-  if ((instruction & 0b11111100000000000000011111111111) >>> 0 == 0b00000000000000000000000000100000) {
-    // ADD
-    var r = state.registers;
-    state.registers[d] = zeroPad(parseInt(r[s], 2) + parseInt(r[t], 2));
+  if /*ADD*/ ((instruction & 0b11111100000000000000011111111111) >>> 0 == 0b00000000000000000000000000100000) {
+    reg[d] = zeroPad(unsigned(reg[s]) + unsigned(reg[t]));
     return state;
   }
-  else if ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000100010) {
-    // SUB
-    var r = state.registers;
-    state.registers[d] = zeroPad(parseInt(r[s], 2) - parseInt(r[t], 2));
+  else if /*SUB*/ ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000100010) {
+    reg[d] = zeroPad(unsigned(reg[s]) - unsigned(reg[t]));
     return state;
   }
-  else if ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011000) {
-    // return `mult $${s}} $${t}`
-    throw "not supported";
+  else if /*MULT*/ ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011000) {
+    var result = signed(reg[s]) * signed(reg[t]);
+    var resultStr = zeroPad(result, 64, 2);
+    reg.HI = result.slice(00, 32);
+    reg.LO = result.slice(32, 64);
+    return state;
   }
-  else if ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011001) {
-    // return `multu $${s}} $${t}`
-    throw "not supported";
+  else if /*MULTU*/ ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011001) {
+    var result = unsigned(reg[s]) * unsigned(reg[t]);
+    var resultStr = zeroPad(result, 64, 2);
+    reg.HI = result.slice(00, 32);
+    reg.LO = result.slice(32, 64);
+    return state;
   }
   else if ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011010) {
     // return `div $${s}} $${t}`
