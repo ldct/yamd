@@ -8,61 +8,64 @@ var buttonStyle = {
   width: 120
 };
 
+var Cell = React.createClass({
+  shouldShowNumber: function () {
+    if (this.props.showNumber === false) return false;
+    if (this.props.showNumber === true) return true;
+    return parseInt(this.props.contents, 2);
+  },
+  render: function () {
+    return <pre style={{margin: 0}}>{this.props.label}:{this.props.contents} {
+      this.shouldShowNumber() ? `(${parseInt(this.props.contents, 2)})` : null
+    }</pre>
+  }
+});
+
 var StateView = React.createClass({
   render: function () {
 
-    var registerView = "";
-    registerView += `\nPC: ${this.props.state.PC} (${parseInt(this.props.state.PC, 2)})`;
-    this.props.state.registers.forEach(function (contents, num) {
-      registerView += `\n${zeroPad(num, 2, 10)}: ${contents}`;
-      if (parseInt(contents, 2) !== 0) {
-        registerView += ` (${parseInt(contents, 2)})`;
-      }
-    });
-    registerView += `\nLO: ${this.props.state.LO}`;
-    registerView += `\nHI: ${this.props.state.HI}`;
+    var self = this;
+
+    var registerView = <div style={{marginTop: 30}}>
+      <Cell label="PC" contents={this.props.state.PC} showNumber={true} />
+
+      {this.props.state.registers.map(function (contents, num) {
+        return <Cell label={pad(num.toString(), 2, "0")} contents={contents} />
+      })}
+
+      <Cell label="LO" contents={this.props.state.LO} />
+      <Cell label="HI" contents={this.props.state.HI} />
+    </div>
 
     var MEMORY_MIDDLE = 16777208 / 2;
 
-    var self = this;
-
-    var lowMemoryView = "";
-    var highMemoryView = "";
-
-    Object.keys(this.props.state.memory).forEach(function (address) {
-      var contents = self.props.state.memory[address];
-      if (parseInt(address) > MEMORY_MIDDLE / 2) {
-        lowMemoryView += `\n${spacePad(address, 8, 10)}:${contents}`;
-      } else {
-        highMemoryView += `\n${spacePad(address, 8, 10)}:${contents}`;
-      }
+    var lowMemoryAddresses = Object.keys(this.props.state.memory).filter(function (address) {
+      return (parseInt(address) <= MEMORY_MIDDLE / 2);
     });
+    var highMemoryAddresses = Object.keys(this.props.state.memory).filter(function (address) {
+      return (parseInt(address) > MEMORY_MIDDLE / 2);
+    });
+
+    var lowMemoryView = <div style={{marginTop: 30, width: 450}}>
+      {lowMemoryAddresses.map(function (address) {
+        return <Cell label={pad(address, 8, " ")} contents={self.props.state.memory[address]} showNumber={false} />
+      })}
+    </div>
+
+    var highMemoryView = <div style={{marginTop: 30, width: 450}}>
+      {highMemoryAddresses.map(function (address) {
+        return <Cell label={pad(address, 8, " ")} contents={self.props.state.memory[address]} />
+      })}
+    </div>
 
     return <div style={{
       display: 'flex',
       flexDirection: 'row'
     }}>
 
-      <pre style={{
-        width: 305,
-        marginRight: 100
-      }}>
-        {registerView}
-      </pre>
-
-      <pre style={{
-        marginRight: 50,
-        width: 325
-      }}>
-        {lowMemoryView}
-      </pre>
-
-      <pre style={{
-        marginRight: 100,
-        width: 300
-      }}>
-        {highMemoryView}
-      </pre>
+      {registerView}
+      {highMemoryView}
+      {lowMemoryView}
 
     </div>
   }
@@ -120,7 +123,7 @@ var App = React.createClass({
     return (
       <div>
 
-        <pre style={{'white-space': "pre"}}>
+        <pre style={{'whiteSpace': "pre"}}>
         Instructions: copy and paste some machine code into the box below and then click load (there is already some sample code in there)
         </pre>
 
