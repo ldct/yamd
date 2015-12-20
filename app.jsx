@@ -14,14 +14,42 @@ var Cell = React.createClass({
     if (this.props.showNumber === true) return true;
     return parseInt(this.props.contents, 2);
   },
+  getBackgroundColor: function () {
+    if (this.props.bgColor === 0) return "white";
+    if (this.props.bgColor === 1) return "#AEC6CF";
+    if (this.props.bgColor === 2) return "#FDFD96";
+    if (this.props.bgColor === 3) return "#FFD1DC";
+    return "white";
+  },
   render: function () {
-    return <pre style={{margin: 0}}>{this.props.label}:{this.props.contents} {
+
+    return <pre onClick={this.props.handleClick ? this.props.handleClick.bind(null, this.props.label) : function () {}} style={{margin: 0, backgroundColor: this.getBackgroundColor()}}>{this.props.label}:{this.props.contents} {
       this.shouldShowNumber() ? `(${parseInt(this.props.contents, 2)})` : null
     }</pre>
   }
 });
 
 var StateView = React.createClass({
+  getInitialState: function () {
+    return {
+      customColors: {}
+    }
+  },
+  handleClick: function (clickedLabel) {
+    clickedLabel = parseInt(clickedLabel);
+    var newCustomColors = JSON.parse(JSON.stringify(this.state.customColors));
+
+    if (!(newCustomColors[clickedLabel])) {
+      newCustomColors[clickedLabel] = 1;
+    } else {
+      newCustomColors[clickedLabel] = (newCustomColors[clickedLabel] + 1) % 4
+    }
+
+    this.setState({
+      customColors: newCustomColors
+    });
+
+  },
   render: function () {
 
     var self = this;
@@ -48,13 +76,21 @@ var StateView = React.createClass({
 
     var lowMemoryView = <div style={{marginTop: 30, width: 450}}>
       {lowMemoryAddresses.map(function (address) {
-        return <Cell label={pad(address, 8, " ")} contents={self.props.state.memory[address]} showNumber={false} />
+        return <Cell
+          bgColor={self.state.customColors[parseInt(address, 10)]}
+          handleClick={self.handleClick}
+          label={pad(address, 8, " ")}
+          contents={self.props.state.memory[address]} showNumber={false} />
       })}
     </div>
 
     var highMemoryView = <div style={{marginTop: 30, width: 450}}>
       {highMemoryAddresses.map(function (address) {
-        return <Cell label={pad(address, 8, " ")} contents={self.props.state.memory[address]} />
+        return <Cell
+          bgColor={self.state.customColors[parseInt(address, 10)]}
+          handleClick={self.handleClick}
+          label={pad(address, 8, " ")}
+          contents={self.props.state.memory[address]} />
       })}
     </div>
 
