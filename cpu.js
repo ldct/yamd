@@ -206,4 +206,11 @@ var executeInstructionString = function (instructionString) {
 
 }
 
-// execute_file('VarAccessN=2.mc');
+if (typeof(module) !== "undefined") { /*for nodejs*/
+  module.exports = {
+    getInitialState: getInitialState,
+    step: step,
+    zeroPad: zeroPad,
+    unsigned: unsigned
+  }
+}
