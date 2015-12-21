@@ -48,6 +48,86 @@ var unsigned = function (value) {
   return parseInt(value, 2);
 }
 
+var dissassemble = function (instruction) {
+
+  var d = (instruction >> 11) & 0b11111
+  var s = (instruction >> 21) & 0b11111
+  var t = (instruction >> 16) & 0b11111
+
+  var i = instruction & 0b1111111111111111
+
+  if (i & 0x8000) {
+    i -= 0x10000
+  }
+
+  if /*ADD*/ ((instruction & 0b11111100000000000000011111111111) >>> 0 == 0b00000000000000000000000000100000) {
+    return `add ${d} ${s} ${t}`;
+  }
+  else if /*SUB*/ ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000100010) {
+    return `sub ${d} ${s} ${t}`;
+  }
+  else if /*MULT*/ ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011000) {
+    return `mult ${s} ${t}`;
+  }
+  else if /*MULTU*/ ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011001) {
+    return `multu ${s} ${t}`;
+  }
+  else if ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011010) {
+    // return `div $${s}} $${t}`
+    return `div ${s} ${t}`;
+  }
+  else if ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011011) {
+    // return `divu $${s}} $${t}`
+    return `divu ${s} ${t}`;
+  }
+  else if ((instruction & 0b11111111111111110000011111111111) >>> 0 === 0b00000000000000000000000000010000) {
+    // return `mfhi $${d}}`
+    return "mfhi";
+  }
+  else if ((instruction & 0b11111111111111110000011111111111) >>> 0 === 0b00000000000000000000000000010010) {
+    // return `mflo $${d}}`
+    return "mflo";
+  }
+  else if ((instruction & 0b11111111111111110000011111111111) >>> 0 === 0b00000000000000000000000000010100) {
+    return `lis ${d}`;
+  }
+  else if /*LW*/ ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b10001100000000000000000000000000) {
+    return `lw ${t} ${i}(${s})`;
+  }
+  else if /*SW*/ ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b10101100000000000000000000000000) {
+    return `sw ${t} ${i}(${s})`;
+  }
+  else if /*SLT*/ ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000101010) {
+    // return `slt $${d} $${s} $${t}`
+    console.log("not supported");
+    return "not supported";
+  }
+  else if ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000101011) {
+    // return `sltu $${d} $${s} $${t}`
+    console.log("not supported");
+    return "not supported";
+  }
+  else if ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b00010000000000000000000000000000) {
+    // return `beq $${s}} $${t} ${i}`
+    console.log("not supported");
+    return "not supported";
+  }
+  else if ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b00010100000000000000000000000000) {
+    // return `bne $${s}} $${t} ${i}`
+    console.log("not supported");
+    throw "not supported";
+  }
+  else if /*JR*/ ((instruction & 0b11111100000111111111111111111111) >>> 0 === 0b00000000000000000000000000001000) {
+    return `jr ${s}`;
+  }
+  else if ((instruction & 0b11111100000111111111111111111111) >>> 0 === 0b00000000000000000000000000001001) {
+    return `jalr ${s}`;
+  }
+  else {
+    return instruction.toString();
+  }
+}
+
 var step = function (state) {
 
   var instruction = parseInt(state.memory[parseInt(state.PC, 2)], 2);
@@ -121,18 +201,22 @@ var step = function (state) {
   }
   else if ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000101010) {
     // return `slt $${d} $${s} $${t}`
+    console.log("not supported");
     throw "not supported";
   }
   else if ((instruction & 0b11111100000000000000011111111111) >>> 0 === 0b00000000000000000000000000101011) {
     // return `sltu $${d} $${s} $${t}`
+    console.log("not supported");
     throw "not supported";
   }
   else if ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b00010000000000000000000000000000) {
     // return `beq $${s}} $${t} ${i}`
+    console.log("not supported");
     throw "not supported";
   }
   else if ((instruction & 0b11111100000000000000000000000000) >>> 0 === 0b00010100000000000000000000000000) {
     // return `bne $${s}} $${t} ${i}`
+    console.log("not supported");
     throw "not supported";
   }
   else if ((instruction & 0b11111100000111111111111111111111) >>> 0 === 0b00000000000000000000000000001000) {
@@ -148,6 +232,7 @@ var step = function (state) {
     return state;
   }
   else {
+    console.log("unknown instruction", instruction);
     throw "unknown instruction", instruction;
   }
 
@@ -190,14 +275,19 @@ var executeInstructionString = function (instructionString) {
     var state = getInitialState(1, 2, instructions);
     while (state.PC !== terminationPC) {
 
-      var PC_value = parseInt(state.PC, 2) / 4;
-      var reg3_value = parseInt(state.registers[3], 2);
-      var reg29_value = parseInt(state.registers[29], 2);
+      try {
+        var PC_value = parseInt(state.PC, 2) / 4;
+        var reg3_value = parseInt(state.registers[3], 2);
+        var reg29_value = parseInt(state.registers[29], 2);
 
-      ret.push(JSON.stringify(state));
+        ret.push(JSON.stringify(state));
 
-      // console.log(`PC: ${PC_value} $3: ${reg3_value} $29: ${reg29_value}`);
-      state = step(state);
+        // console.log(`PC: ${PC_value} $3: ${reg3_value} $29: ${reg29_value}`);
+        state = step(state);
+      } catch (e) {
+        break;
+      }
+
     }
 
     ret.push(JSON.stringify(state));
@@ -211,6 +301,7 @@ if (typeof(module) !== "undefined") { /*for nodejs*/
     getInitialState: getInitialState,
     step: step,
     zeroPad: zeroPad,
-    unsigned: unsigned
+    unsigned: unsigned,
+    dissassemble: dissassemble
   }
 }
