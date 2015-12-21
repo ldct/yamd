@@ -37,9 +37,16 @@ var Cell = React.createClass({
 
     return <pre
       onClick={this.props.handleClick ? this.props.handleClick.bind(null, this.props.label) : function () {}}
-      style={{margin: 0, backgroundColor: this.getBackgroundColor()}}>{this.props.label}:{this.props.contents} {
-      this.getHumanReadable()
-    }</pre>
+      style={{
+        margin: 0,
+        backgroundColor: this.getBackgroundColor(),
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
+        userSelect: 'none',
+      }}
+      >{this.props.label}:{this.props.contents} {this.getHumanReadable()}
+    </pre>
   }
 });
 
