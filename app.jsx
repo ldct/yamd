@@ -36,7 +36,21 @@ var Cell = React.createClass({
   render: function () {
 
     return <pre
-      onClick={this.props.handleClick ? this.props.handleClick.bind(null, this.props.label) : function () {}}
+      onMouseDown={
+        this.props.handleMouseDown
+        ? this.props.handleMouseDown.bind(null, this.props.label)
+        : function () {}
+      }
+      onMouseUp={
+        this.props.handleMouseUp
+        ? this.props.handleMouseUp.bind(null, this.props.label)
+        : function () {}
+      }
+      onClick={
+        this.props.handleClick
+        ? this.props.handleClick.bind(null, this.props.label)
+        : function () {}
+      }
       style={{
         margin: 0,
         backgroundColor: this.getBackgroundColor(),
@@ -53,23 +67,57 @@ var Cell = React.createClass({
 var StateView = React.createClass({
   getInitialState: function () {
     return {
-      customColors: {}
+      customColors: {},
+      lockedCellRanges: []
     }
   },
   handleClick: function (clickedLabel) {
-    clickedLabel = parseInt(clickedLabel);
+    clickedLabel = parseInt(clickedLabel, 10);
     var newCustomColors = JSON.parse(JSON.stringify(this.state.customColors));
 
+    var newColor;
+
     if (!(newCustomColors[clickedLabel])) {
-      newCustomColors[clickedLabel] = 1;
+      newColor = 1;
     } else {
-      newCustomColors[clickedLabel] = (newCustomColors[clickedLabel] + 1) % 4
+      newColor = (newCustomColors[clickedLabel] + 1) % 4
     }
+    newCustomColors[clickedLabel] = newColor;
+
+    this.state.lockedCellRanges.forEach(function (range) {
+      var a = range[0];
+      var b = range[1];
+
+      if (a <= clickedLabel && clickedLabel < b) {
+        // colour the range
+        for (var i=a; i<b; i+=4) {
+          newCustomColors[i] = newColor;
+        }
+      }
+    });
 
     this.setState({
       customColors: newCustomColors
     });
 
+  },
+  handleMouseDown: function (mdLabel) {
+    this.mdLabel = mdLabel;
+  },
+  handleMouseUp: function (muLabel) {
+    var mdLabel = parseInt(this.mdLabel, 10);
+    var muLabel = parseInt(muLabel, 10);
+    var start = Math.min(mdLabel, muLabel);
+    var end = Math.max(mdLabel, muLabel);
+    if (end > start) {
+      this.lockCells(start, end + 4);
+    }
+  },
+  lockCells: function (start, end) {
+    console.log("locking", start, end);
+    this.setState({
+      lockedCellRanges: this.state.lockedCellRanges.concat([[start, end]]),
+    });
   },
   render: function () {
 
@@ -117,19 +165,29 @@ var StateView = React.createClass({
         return <Cell
           bgColor={self.state.customColors[parseInt(address, 10)]}
           handleClick={self.handleClick}
+          handleMouseDown={self.handleMouseDown}
+          handleMouseUp={self.handleMouseUp}
           label={pad(address, 8, " ")}
           contents={self.props.state.memory[address]} />
       })}
     </div>
 
-    return <div style={{
-      display: 'flex',
-      flexDirection: 'row'
-    }}>
+    return <div>
+
+      <pre>
+      {this.state.lockedCellRanges.join('\n')}
+      </pre>
+
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row'
+      }}>
 
       {registerView}
       {highMemoryView}
       {lowMemoryView}
+
+      </div>
 
     </div>
   }
