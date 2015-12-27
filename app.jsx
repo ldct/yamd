@@ -76,6 +76,7 @@ var StateView = React.createClass({
     var newCustomColors = JSON.parse(JSON.stringify(this.state.customColors));
 
     var newColor;
+    var self = this;
 
     if (!(newCustomColors[clickedLabel])) {
       newColor = 1;
@@ -84,14 +85,16 @@ var StateView = React.createClass({
     }
     newCustomColors[clickedLabel] = newColor;
 
-    this.state.lockedCellRanges.forEach(function (range) {
+    self.state.lockedCellRanges.forEach(function (range) {
       var a = range[0];
       var b = range[1];
 
       if (a <= clickedLabel && clickedLabel < b) {
         // colour the range
         for (var i=a; i<b; i+=4) {
-          newCustomColors[i] = newColor;
+          if (self.props.state.memory[i.toString()] !== undefined) {
+            newCustomColors[i] = newColor;
+          }
         }
       }
     });
@@ -115,8 +118,31 @@ var StateView = React.createClass({
   },
   lockCells: function (start, end) {
     console.log("locking", start, end);
+
+    var newLockedCellRanges = this.state.lockedCellRanges;
+
+    var overlaps = function (a1, b1, a2, b2) {
+      if (a2 <= a1 && a1 < b2) return true;
+      if (a1 <= a2 && a2 < b1) return true;
+      return false;
+    };
+
+    newLockedCellRanges = newLockedCellRanges.filter(function (range) {
+      var a = range[0];
+      var b = range[1];
+
+      // if [a, b) overlaps with [start, end) then remove [a, b) and modify [start, end)
+
+      if (overlaps(a, b, start, end)) {
+        start = Math.min(a, start);
+        end = Math.max(b, end);
+        return false;
+      }
+      return true;
+    });
+
     this.setState({
-      lockedCellRanges: this.state.lockedCellRanges.concat([[start, end]]),
+      lockedCellRanges: newLockedCellRanges.concat([[start, end]]),
     });
   },
   render: function () {
@@ -144,6 +170,7 @@ var StateView = React.createClass({
     });
 
     var lowMemoryView = <div style={{marginTop: 30, width: 450}}>
+
       {lowMemoryAddresses.map(function (address) {
         if (address > 0) {
           var prevCode = self.props.state.memory[address-4];
@@ -160,22 +187,59 @@ var StateView = React.createClass({
       })}
     </div>
 
-    var highMemoryView = <div style={{marginTop: 30, width: 450}}>
-      {highMemoryAddresses.map(function (address) {
-        return <Cell
-          bgColor={self.state.customColors[parseInt(address, 10)]}
-          handleClick={self.handleClick}
-          handleMouseDown={self.handleMouseDown}
-          handleMouseUp={self.handleMouseUp}
-          label={pad(address, 8, " ")}
-          contents={self.props.state.memory[address]} />
-      })}
+    var self = this;
+    var isLocked = function (address1, address2) {
+      for (var i=0; i<self.state.lockedCellRanges.length; i++) {
+        var range = self.state.lockedCellRanges[i];
+        var a = range[0];
+        var b = range[1];
+        if (a <= address1 && address1 < b && a <= address2 && address2 < b) return true;
+      }
+      return false;
+    }
+
+    var highMemoryBlocks = [];
+    highMemoryAddresses.forEach(function (address) {
+      address = parseInt(address, 10);
+      if (highMemoryBlocks.length === 0) {
+        highMemoryBlocks.push([address]);
+        return;
+      }
+      var lastBlock = highMemoryBlocks[highMemoryBlocks.length-1];
+      var lastAddress = lastBlock[lastBlock.length-1];
+      if (isLocked(lastAddress, address)) {
+        lastBlock.push(address);
+      } else {
+        highMemoryBlocks.push([address]);
+      }
+    });
+
+    var highMemoryView = <div style={{marginTop: 30, width: 450, border: "1px solid pink"}}>
+
+    {highMemoryBlocks.map(function (block) {
+
+
+      return <div style={{border: "1px solid blue", margin: 1}}>
+
+        {block.map(function (address) {
+          return <Cell
+            bgColor={self.state.customColors[parseInt(address, 10)]}
+            handleClick={self.handleClick}
+            handleMouseDown={self.handleMouseDown}
+            handleMouseUp={self.handleMouseUp}
+            label={pad(address, 8, " ")}
+            contents={self.props.state.memory[address]} />
+        })}
+        </div>
+
+    })}
     </div>
 
     return <div>
 
       <pre>
       {this.state.lockedCellRanges.join('\n')}
+      {JSON.stringify(highMemoryBlocks)}
       </pre>
 
       <div style={{
