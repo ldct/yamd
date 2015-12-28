@@ -1,3 +1,6 @@
+/**
+*/
+
 var pad = function (str, targetLength, padChar) {
   targetLength = targetLength || 32;
   var zero = targetLength - str.length + 1;
@@ -156,14 +159,14 @@ var step = function (state) {
   else if /*MULT*/ ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011000) {
     var result = signed(reg[s]) * signed(reg[t]);
     var resultStr = zeroPad(result, 64, 2);
-    reg.HI = result.slice(00, 32);
+    reg.HI = result.slice(0, 32);
     reg.LO = result.slice(32, 64);
     return state;
   }
   else if /*MULTU*/ ((instruction & 0b11111100000000001111111111111111) >>> 0 === 0b00000000000000000000000000011001) {
     var result = unsigned(reg[s]) * unsigned(reg[t]);
     var resultStr = zeroPad(result, 64, 2);
-    reg.HI = result.slice(00, 32);
+    reg.HI = result.slice(0, 32);
     reg.LO = result.slice(32, 64);
     return state;
   }

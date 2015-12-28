@@ -1,4 +1,5 @@
-/** @jsx React.DOM */
+/**
+*/
 
 var buttonStyle = {
   backgroundColor: '#cccccc',
@@ -309,7 +310,7 @@ var App = React.createClass({
   },
   handleClickLoad: function () {
 
-    node = $(React.findDOMNode(this)).find('#mcInput');
+    var node = $(ReactDOM.findDOMNode(this)).find('#mcInput');
     var instructionString = node.val();
 
     var eis = executeInstructionString(instructionString);
@@ -324,6 +325,7 @@ var App = React.createClass({
     console.log('lol');
   },
   render: function() {
+    console.log('rendering app');
     return (
       <div>
 
@@ -347,4 +349,4 @@ var App = React.createClass({
   }
 });
 
-React.render(<App />, document.body);
+ReactDOM.render(<App />, document.getElementById("app"));
