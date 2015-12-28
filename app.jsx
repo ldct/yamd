@@ -64,6 +64,9 @@ var Cell = React.createClass({
   }
 });
 
+/*
+** View of a CPU state (registers, memory) at a given instance in time
+*/
 var StateView = React.createClass({
   getInitialState: function () {
     return {
@@ -214,12 +217,22 @@ var StateView = React.createClass({
       }
     });
 
-    var highMemoryView = <div style={{marginTop: 30, width: 450, border: "1px solid pink"}}>
+    var highMemoryView = <div style={{marginTop: 30, width: 450}}>
 
     {highMemoryBlocks.map(function (block) {
 
+      var borderStyle;
+      if (block.length === 1) {
+        borderStyle = {};
+      } else {
+        borderStyle = {
+          border: "1px solid lightgrey",
+          marginTop: 1,
+          marginBottom: 1
+        };
+      }
 
-      return <div style={{border: "1px solid blue", margin: 1}}>
+      return <div style={borderStyle}>
 
         {block.map(function (address) {
           return <Cell
@@ -238,8 +251,8 @@ var StateView = React.createClass({
     return <div>
 
       <pre>
-      {this.state.lockedCellRanges.join('\n')}
-      {JSON.stringify(highMemoryBlocks)}
+      {/*this.state.lockedCellRanges.join('\n')}
+      {JSON.stringify(highMemoryBlocks)*/}
       </pre>
 
       <div style={{
