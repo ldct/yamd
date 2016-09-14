@@ -154,11 +154,14 @@ var StateView = React.createClass({
     var self = this;
 
     var registerView = <div style={{marginTop: 30}}>
-      <Cell label="PC" contents={this.props.state.PC} showNumber={true} />
+      <div>
+        registers + PC
+        <Cell label="PC" contents={this.props.state.PC} showNumber={true} />
 
-      {this.props.state.registers.map(function (contents, num) {
-        return <Cell label={pad(num.toString(), 2, "0")} contents={contents} />
-      })}
+        {this.props.state.registers.map(function (contents, num) {
+          return <Cell label={pad(num.toString(), 2, "0")} contents={contents} />
+        })}
+      </div>
 
       <Cell label="LO" contents={this.props.state.LO} />
       <Cell label="HI" contents={this.props.state.HI} />
@@ -174,6 +177,8 @@ var StateView = React.createClass({
     });
 
     var lowMemoryView = <div style={{marginTop: 30, width: 450}}>
+
+      Low Memory
 
       {lowMemoryAddresses.map(function (address) {
         if (address > 0) {
@@ -219,6 +224,8 @@ var StateView = React.createClass({
     });
 
     var highMemoryView = <div style={{marginTop: 30, width: 450}}>
+
+    High Memory
 
     {highMemoryBlocks.map(function (block) {
 
