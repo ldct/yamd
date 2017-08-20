@@ -6,6 +6,10 @@ Yet Another MIPS Debugger
 
 ![screenshot](https://s3.amazonaws.com/xuanji.public/yamd_screenshot.PNG)
 
+### Why?
+
+I had to write parts of a compiler for CS241E. The target language, LACS, is pretty complex (recursion, heap-allocated closures, GC), necessitating in particular lots of runtime pointer chasing. Staring at the generated machine code is a terrible way to debug the compiler, I and wrote many bugs.
+
 ### Usage
 
 Copy and paste your program into the text box beside the "load" button. Your program should be represented as a single line of comma-separated words, where each word is a MIPS instruction encoded as a binary string (hence 32 characters wide). Click "load". You will see 3 columns
